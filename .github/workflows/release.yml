@@ -1,0 +1,39 @@
+name: Release
+
+on:
+  push:
+    tags:
+    - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+env:
+  HOSTNAME: "gcr.io"
+  REGISTRY: $HOSTNAME/${{ secrets.PROJECT_ID }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Authenticate Docker to Registry
+      id: authenticate-docker 
+      run: |
+        echo ${{ secrets.SERVICE_ACCOUNT_KEY }} | docker login -u _json_key --password-stdin https://$HOSTNAME
+    - name: Build, Tag, and Push Image to AWS ECR
+      id: build-image
+      env:
+        IMAGE_REPO: ${{ github.event.repository.name }}
+        IMAGE_TAG: ${{ github.ref }} #github.sha }}
+        TAGGED_IMAGE: $REGISTRY/$IMAGE_REPO:$IMAGE_TAG
+      run: |
+        docker build -t $TAGGED_IMAGE .
+        docker push $TAGGED_IMAGE
+    - name: Publish Release
+      id: publish-release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: ${{ github.ref }}
+        draft: false 
+        prerelease: false
