@@ -22,7 +22,8 @@ jobs:
       id: build-image
       env:
         IMAGE_REPO: ${{ github.event.repository.name }}
-        IMAGE_TAG: ${{ github.ref }} #github.sha }}
+        #IMAGE_TAG: ${{ github.ref }} #github.sha }}
+        IMAGE_TAG: ${{ github.sha }}
         TAGGED_IMAGE: $REGISTRY/$IMAGE_REPO:$IMAGE_TAG
       run: |
         docker build -t $TAGGED_IMAGE .
@@ -34,6 +35,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ github.ref }}
-        release_name: ${{ github.ref }}
+        release_name: ${{ github.sha }}
         draft: false 
         prerelease: false
