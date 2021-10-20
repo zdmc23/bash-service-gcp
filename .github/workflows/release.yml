@@ -7,7 +7,7 @@ on:
 
 env:
   HOSTNAME: ${{ secrets.LOCATION }}-docker.pkg.dev
-  REGISTRY: $HOSTNAME/${{ secrets.PROJECT_ID }}/${{ secrets.IMAGE_REPO }}
+  REGISTRY: $HOSTNAME/${{ secrets.PROJECT_ID }}
 
 jobs:
   release:
@@ -21,10 +21,11 @@ jobs:
     - name: Build, Tag, and Push Image to AWS ECR
       id: build-image
       env:
+        IMAGE_REPO: ${{ secrets.IMAGE_REPO }}
         IMAGE_NAME: ${{ github.event.repository.name }}
         #IMAGE_TAG: ${{ github.ref }} #github.sha }}
         IMAGE_TAG: ${{ github.sha }}
-        TAGGED_IMAGE: $REGISTRY/$IMAGE_NAME:$IMAGE_TAG
+        TAGGED_IMAGE: $REGISTRY/$IMAGE_REPO/$IMAGE_NAME:$IMAGE_TAG
       run: |
         docker build -t $TAGGED_IMAGE .
         docker push $TAGGED_IMAGE
