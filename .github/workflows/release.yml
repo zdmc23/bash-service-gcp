@@ -17,7 +17,7 @@ jobs:
     - name: Authenticate Docker to Registry
       id: authenticate-docker 
       run: |
-        echo "${{ secrets.SERVICE_ACCOUNT_KEY }}" | docker login -u _json_key --password-stdin https://$HOSTNAME
+        echo '${{ secrets.SERVICE_ACCOUNT_KEY }}' | docker login -u _json_key --password-stdin https://$HOSTNAME
     - name: Build, Tag, and Push Image to AWS ECR
       id: build-image
       env:
