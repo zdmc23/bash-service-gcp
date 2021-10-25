@@ -7,30 +7,25 @@ on:
 
 env:
   HOSTNAME: ${{ secrets.LOCATION }}-docker.pkg.dev
-  REGISTRY: $HOSTNAME/${{ secrets.PROJECT_ID }}
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Authenticate Docker to Registry
+    - name: Authenticate Docker to Container Registry
       id: authenticate-docker 
       run: |
         echo '${{ secrets.SERVICE_ACCOUNT_KEY }}' | docker login -u _json_key --password-stdin https://$HOSTNAME
-    - name: Build, Tag, and Push Image to AWS ECR
+    - name: Build, Tag, and Push Image to Container Registry
       id: build-image
-      env:
-        IMAGE_REPO: ${{ secrets.IMAGE_REPO }}
-        IMAGE_NAME: ${{ github.event.repository.name }}
-        #IMAGE_TAG: ${{ github.ref }} #github.sha }}
-        IMAGE_TAG: ${{ github.sha }}
-        TAGGED_IMAGE: $REGISTRY/$IMAGE_REPO/$IMAGE_NAME:$IMAGE_TAG
       run: |
-        echo $TAGGED_IMAGE
+        IMAGE_NAME=$(echo ${{ github.repository }} | cut -d/ -f2)
+        IMAGE_TAG=$(echo ${{ github.ref }} | cut -d/ -f3)
+        TAGGED_IMAGE=$HOSTNAME/${{ secrets.PROJECT_ID }}/${{ secrets.IMAGE_REPO }}/$IMAGE_NAME:$IMAGE_TAG
         docker build -t $TAGGED_IMAGE .
         docker push $TAGGED_IMAGE
-    - name: Publish Release
+    - name: Publish GitHub Release
       id: publish-release
       uses: actions/create-release@v1
       env:
